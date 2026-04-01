@@ -41,6 +41,13 @@ gt init
 - Cria commit inicial
 - Cria branch `gt.dev-branch` e faz checkout
 
+### `gt log`
+Exibe o histórico de commits em formato visual.
+
+```bash
+gt log
+```
+
 ### `gt feature new <nome>`
 Cria uma nova branch de feature a partir da branch de produção.
 
@@ -66,6 +73,15 @@ gt release new 1.0.0
 # Cria: release/1.0.0 a partir de main
 ```
 
+### `gt release add <nome>`
+Adiciona uma feature à release atual.
+
+```bash
+# Estando na branch release/1.0.0
+gt release add minha-feature
+# Faz merge de feature/minha-feature na release atual
+```
+
 ### `gt release finish <nome>`
 Finaliza uma release.
 
@@ -84,14 +100,15 @@ gt init
                            # Criar features
 gt feature new login
 # ... trabalho ...
-gt feature finish login
 gt feature new dashboard
 # ... trabalho ...
-gt feature finish dashboard
 
                            # Criar release
 gt release new 1.0.0
+gt release add login       # Adiciona feature à release
+gt release add dashboard    # Adiciona feature à release
 # ... ajustes finais ...
+
 gt release finish 1.0.0
 ```
 

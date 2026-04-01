@@ -2,6 +2,8 @@
 
 PRD_BRANCH=$(git config gt.prd-branch || echo "main")
 DEV_BRANCH=$(git config gt.dev-branch || echo "develop")
+REL_BRANCH="release"
+FET_BRANCH="feature"
 
 is_git_repo() {
     if ! git rev-parse --is-inside-work-tree &>/dev/null; then
@@ -27,6 +29,20 @@ require_arg() {
 
 branch_exists() {
     git rev-parse --verify "$1" &>/dev/null
+}
+
+get_current_branch() {
+    git rev-parse --abbrev-ref HEAD
+}
+
+is_release_branch() {
+    local current=$(get_current_branch)
+    [[ "$current" == "${REL_BRANCH}"/* ]]
+}
+
+cmd_log() {
+    is_git_repo
+    git log --oneline --graph --all
 }
 
 cmd_init() {
@@ -77,13 +93,13 @@ cmd_feature_new() {
     local name="$1"
     require_arg "$name" "feature new"
     
-    if branch_exists "feature/$name"; then
-        echo "Erro: Branch 'feature/$name' já existe."
+    if branch_exists "${FET_BRANCH}/$name"; then
+        echo "Erro: Branch '${FET_BRANCH}/$name' já existe."
         exit 1
     fi
     
-    git checkout -b "feature/$name" "${PRD_BRANCH}"
-    echo "✓ Branch 'feature/$name' criada a partir de '$PRD_BRANCH'"
+    git checkout -b "${FET_BRANCH}/$name" "${PRD_BRANCH}"
+    echo "✓ Branch '${FET_BRANCH}/$name' criada a partir de '$PRD_BRANCH'"
 }
 
 cmd_feature_finish() {
@@ -91,14 +107,14 @@ cmd_feature_finish() {
     local name="$1"
     require_arg "$name" "feature finish"
     
-    if ! branch_exists "feature/$name"; then
-        echo "Erro: Branch 'feature/$name' não existe."
+    if ! branch_exists "${FET_BRANCH}/$name"; then
+        echo "Erro: Branch '${FET_BRANCH}/$name' não existe."
         exit 1
     fi
     
     git checkout "${DEV_BRANCH}"
-    git merge "feature/$name"
-    echo "✓ Merge de 'feature/$name' em '$DEV_BRANCH' realizado"
+    git merge "${FET_BRANCH}/$name"
+    echo "✓ Merge de '${FET_BRANCH}/$name' em '$DEV_BRANCH' realizado"
 }
 
 cmd_release_new() {
@@ -106,13 +122,32 @@ cmd_release_new() {
     local name="$1"
     require_arg "$name" "release new"
     
-    if branch_exists "release/$name"; then
-        echo "Erro: Branch 'release/$name' já existe."
+    if branch_exists "${REL_BRANCH}/$name"; then
+        echo "Erro: Branch '${REL_BRANCH}/$name' já existe."
         exit 1
     fi
     
-    git checkout -b "release/$name" "${PRD_BRANCH}"
-    echo "✓ Branch 'release/$name' criada a partir de '$PRD_BRANCH'"
+    git checkout -b "${REL_BRANCH}/$name" "${PRD_BRANCH}"
+    echo "✓ Branch '${REL_BRANCH}/$name' criada a partir de '$PRD_BRANCH'"
+}
+
+cmd_release_add() {
+    is_git_repo
+    local name="$1"
+    require_arg "$name" "release add"
+    
+    if ! is_release_branch; then
+        echo "Erro: Você não está em uma branch de release."
+        exit 1
+    fi
+    
+    if ! branch_exists "${FET_BRANCH}/$name"; then
+        echo "Erro: Branch '${FET_BRANCH}/$name' não existe."
+        exit 1
+    fi
+    
+    git merge "${FET_BRANCH}/$name"
+    echo "✓ Feature '${FET_BRANCH}/$name' adicionada à release"
 }
 
 cmd_release_finish() {
@@ -120,16 +155,16 @@ cmd_release_finish() {
     local name="$1"
     require_arg "$name" "release finish"
     
-    if ! branch_exists "release/$name"; then
-        echo "Erro: Branch 'release/$name' não existe."
+    if ! branch_exists "${REL_BRANCH}/$name"; then
+        echo "Erro: Branch '${REL_BRANCH}/$name' não existe."
         exit 1
     fi
     
     git checkout "${PRD_BRANCH}"
-    git merge "release/$name"
+    git merge "${REL_BRANCH}/$name"
     
     git checkout "${DEV_BRANCH}"
-    git merge "release/$name"
+    git merge "${REL_BRANCH}/$name"
     
     git tag "$name"
     
@@ -141,10 +176,12 @@ show_help() {
     echo "Uso: gt <comando> [opções]"
     echo ""
     echo "Comandos:"
+    echo "  log                     Exibir histórico de commits"
     echo "  init                    Inicializar repositório git com '$PRD_BRANCH' e '$DEV_BRANCH'"
     echo "  feature new <nome>      Criar nova branch de feature a partir de '$PRD_BRANCH'"
-    echo "  feature finish <nome>   Fazer merge da feature em '$DEV_BRANCH'"
-    echo "  release new <nome>      Criar nova branch de release a partir de '$PRD_BRANCH'"
+    echo "  feature finish <nome>    Fazer merge da feature em '$DEV_BRANCH'"
+    echo "  release new <nome>       Criar nova branch de release a partir de '$PRD_BRANCH'"
+    echo "  release add <nome>       Adicionar feature à release atual"
     echo "  release finish <nome>   Finalizar release: merge em '$PRD_BRANCH', merge em '$DEV_BRANCH' e criar tag"
     echo ""
     echo "Configurações (via git config):"
@@ -157,6 +194,7 @@ show_help() {
 }
 
 case "$1" in
+    "log")              cmd_log ;;
     "init")             cmd_init ;;
     "feature")
         case "$2" in
@@ -168,6 +206,7 @@ case "$1" in
     "release")
         case "$2" in
             "new")     cmd_release_new "$3" ;;
+            "add")     cmd_release_add "$3" ;;
             "finish")  cmd_release_finish "$3" ;;
             *)         show_help ;;
         esac
