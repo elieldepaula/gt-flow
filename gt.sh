@@ -4,6 +4,7 @@ PRD_BRANCH=$(git config gt.prd-branch || echo "main")
 DEV_BRANCH=$(git config gt.dev-branch || echo "develop")
 REL_BRANCH=$(git config gt.rel-branch || echo "release")
 FET_BRANCH=$(git config gt.fet-branch || echo "feature")
+REL_PREFIX=$(git config gt.rel-prefix || echo "")
 
 is_git_repo() {
     if ! git rev-parse --is-inside-work-tree &>/dev/null; then
@@ -122,13 +123,13 @@ cmd_release_new() {
     local name="$1"
     require_arg "$name" "release new"
     
-    if branch_exists "${REL_BRANCH}/$name"; then
-        echo "Error: Branch '${REL_BRANCH}/$name' already exists."
+    if branch_exists "${REL_BRANCH}/${REL_PREFIX}$name"; then
+        echo "Error: Branch '${REL_BRANCH}/${REL_PREFIX}$name' already exists."
         exit 1
     fi
     
-    git checkout -b "${REL_BRANCH}/$name" "${PRD_BRANCH}"
-    echo "✓ Branch '${REL_BRANCH}/$name' created from '$PRD_BRANCH'"
+    git checkout -b "${REL_BRANCH}/${REL_PREFIX}$name" "${PRD_BRANCH}"
+    echo "✓ Branch '${REL_BRANCH}/${REL_PREFIX}$name' created from '$PRD_BRANCH'"
 }
 
 cmd_release_add() {
@@ -155,8 +156,8 @@ cmd_release_finish() {
     local name="$1"
     require_arg "$name" "release finish"
     
-    if ! branch_exists "${REL_BRANCH}/$name"; then
-        echo "Error: Branch '${REL_BRANCH}/$name' does not exist."
+    if ! branch_exists "${REL_BRANCH}/${REL_PREFIX}$name"; then
+        echo "Error: Branch '${REL_BRANCH}/${REL_PREFIX}$name' does not exist."
         exit 1
     fi
     
