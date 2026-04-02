@@ -2,8 +2,8 @@
 
 PRD_BRANCH=$(git config gt.prd-branch || echo "main")
 DEV_BRANCH=$(git config gt.dev-branch || echo "develop")
-REL_BRANCH="release"
-FET_BRANCH="feature"
+REL_BRANCH=$(git config gt.rel-branch || echo "release")
+FET_BRANCH=$(git config gt.fet-branch || echo "feature")
 
 is_git_repo() {
     if ! git rev-parse --is-inside-work-tree &>/dev/null; then
