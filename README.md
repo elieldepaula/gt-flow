@@ -1,120 +1,120 @@
 # GT - Git Tool
 
-CLI para automatizar tarefas do Git no fluxo de trabalho feature/release.
+CLI to automate Git tasks in the feature/release workflow.
 
-## Instalação
+## Installation
 
 ```bash
-# Torne o script executável
+# Make script executable
 chmod +x gt.sh
 
-# Opcional: adicione ao PATH ou crie um alias no seu ~/.zshrc
-alias gt='/caminho/para/gt.sh'
+# Optional: add to PATH or create alias in your ~/.zshrc
+alias gt='/path/to/gt.sh'
 ```
 
-## Configuração
+## Configuration
 
-Defina as branches de produção e desenvolvimento:
+Set production and development branches:
 
 ```bash
-# Global (todos os projetos)
+# Global (all projects)
 git config --global gt.prd-branch main
 git config --global gt.dev-branch develop
 
-# Por repositório
+# Per repository
 git config gt.prd-branch main
 git config gt.dev-branch develop
 ```
 
-Se não configurado, usa os padrões: `main` e `develop`.
+If not configured, defaults to: `main` and `develop`.
 
-## Comandos
-
-### `gt init`
-Inicializa um repositório Git com as branches configuradas.
-
-```bash
-gt init
-```
-- Renomeia branch principal para `gt.prd-branch`
-- Cria `.gitignore` com padrões comuns
-- Cria commit inicial
-- Cria branch `gt.dev-branch` e faz checkout
+## Commands
 
 ### `gt log`
-Exibe o histórico de commits em formato visual.
+Show commit history in visual format.
 
 ```bash
 gt log
 ```
 
-### `gt feature new <nome>`
-Cria uma nova branch de feature a partir da branch de produção.
+### `gt init`
+Initialize a Git repository with configured branches.
 
 ```bash
-gt feature new minha-feature
-# Cria: feature/minha-feature a partir de main
+gt init
 ```
+- Renames main branch to `gt.prd-branch`
+- Creates `.gitignore` with common patterns
+- Creates initial commit
+- Creates branch `gt.dev-branch` and checks it out
 
-### `gt feature finish <nome>`
-Faz merge da feature na branch de desenvolvimento.
+### `gt feature new <name>`
+Create a new feature branch from the production branch.
 
 ```bash
-gt feature finish minha-feature
-# Faz merge de feature/minha-feature em develop
-# Faz checkout para develop
+gt feature new my-feature
+# Creates: feature/my-feature from main
 ```
 
-### `gt release new <nome>`
-Cria uma nova branch de release a partir da branch de produção.
+### `gt feature finish <name>`
+Merge the feature into the development branch.
+
+```bash
+gt feature finish my-feature
+# Merges feature/my-feature into develop
+# Checks out develop
+```
+
+### `gt release new <name>`
+Create a new release branch from the production branch.
 
 ```bash
 gt release new 1.0.0
-# Cria: release/1.0.0 a partir de main
+# Creates: release/1.0.0 from main
 ```
 
-### `gt release add <nome>`
-Adiciona uma feature à release atual.
+### `gt release add <name>`
+Add a feature to the current release.
 
 ```bash
-# Estando na branch release/1.0.0
-gt release add minha-feature
-# Faz merge de feature/minha-feature na release atual
+# While on release/1.0.0 branch
+gt release add my-feature
+# Merges feature/my-feature into current release
 ```
 
-### `gt release finish <nome>`
-Finaliza uma release.
+### `gt release finish <name>`
+Finish a release.
 
 ```bash
 gt release finish 1.0.0
-# 1. Merge em gt.prd-branch (main)
-# 2. Merge em gt.dev-branch (develop)
-# 3. Cria tag <nome>
-# 4. Faz checkout para gt.dev-branch (develop)
+# 1. Merge into gt.prd-branch (main)
+# 2. Merge into gt.dev-branch (develop)
+# 3. Create tag <name>
+# 4. Checkout to gt.dev-branch (develop)
 ```
 
-## Fluxo de Trabalho
+## Workflow
 
 ```
 gt init
-                           # Criar features
+                           # Create features
 gt feature new login
-# ... trabalho ...
+# ... work ...
 gt feature new dashboard
-# ... trabalho ...
+# ... work ...
 
-                           # Criar release
+                           # Create release
 gt release new 1.0.0
-gt release add login       # Adiciona feature à release
-gt release add dashboard    # Adiciona feature à release
-# ... ajustes finais ...
+gt release add login       # Add feature to release
+gt release add dashboard    # Add feature to release
+# ... final adjustments ...
 
 gt release finish 1.0.0
 ```
 
-## Ajuda
+## Help
 
 ```bash
 gt
-# Exibe todos os comandos e configuração atual
+# Shows all commands and current configuration
 ```

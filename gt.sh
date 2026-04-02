@@ -7,22 +7,22 @@ FET_BRANCH=$(git config gt.fet-branch || echo "feature")
 
 is_git_repo() {
     if ! git rev-parse --is-inside-work-tree &>/dev/null; then
-        echo "Erro: Você não está em um repositório git."
+        echo "Error: Not a git repository."
         exit 1
     fi
 }
 
 is_not_git_repo() {
     if git rev-parse --is-inside-work-tree &>/dev/null; then
-        echo "Erro: Já existe um repositório git neste diretório."
+        echo "Error: Git repository already exists."
         exit 1
     fi
 }
 
 require_arg() {
     if [ -z "$1" ]; then
-        echo "Erro: Argumento '<nome>' é obrigatório."
-        echo "Uso: gt $1 <nome>"
+        echo "Error: Argument '<name>' is required."
+        echo "Usage: gt $1 <name>"
         exit 1
     fi
 }
@@ -83,9 +83,9 @@ EOF
     git commit -m "Initial commit"
     
     git checkout -b "${DEV_BRANCH}"
-    echo "✓ Repositório git inicializado"
-    echo "✓ Commit inicial com .gitignore criado"
-    echo "✓ Branch '$DEV_BRANCH' criada"
+    echo "✓ Git repository initialized"
+    echo "✓ Initial commit with .gitignore created"
+    echo "✓ Branch '$DEV_BRANCH' created"
 }
 
 cmd_feature_new() {
@@ -94,12 +94,12 @@ cmd_feature_new() {
     require_arg "$name" "feature new"
     
     if branch_exists "${FET_BRANCH}/$name"; then
-        echo "Erro: Branch '${FET_BRANCH}/$name' já existe."
+        echo "Error: Branch '${FET_BRANCH}/$name' already exists."
         exit 1
     fi
     
     git checkout -b "${FET_BRANCH}/$name" "${PRD_BRANCH}"
-    echo "✓ Branch '${FET_BRANCH}/$name' criada a partir de '$PRD_BRANCH'"
+    echo "✓ Branch '${FET_BRANCH}/$name' created from '$PRD_BRANCH'"
 }
 
 cmd_feature_finish() {
@@ -108,13 +108,13 @@ cmd_feature_finish() {
     require_arg "$name" "feature finish"
     
     if ! branch_exists "${FET_BRANCH}/$name"; then
-        echo "Erro: Branch '${FET_BRANCH}/$name' não existe."
+        echo "Error: Branch '${FET_BRANCH}/$name' does not exist."
         exit 1
     fi
     
     git checkout "${DEV_BRANCH}"
     git merge "${FET_BRANCH}/$name"
-    echo "✓ Merge de '${FET_BRANCH}/$name' em '$DEV_BRANCH' realizado"
+    echo "✓ Merged '${FET_BRANCH}/$name' into '$DEV_BRANCH'"
 }
 
 cmd_release_new() {
@@ -123,12 +123,12 @@ cmd_release_new() {
     require_arg "$name" "release new"
     
     if branch_exists "${REL_BRANCH}/$name"; then
-        echo "Erro: Branch '${REL_BRANCH}/$name' já existe."
+        echo "Error: Branch '${REL_BRANCH}/$name' already exists."
         exit 1
     fi
     
     git checkout -b "${REL_BRANCH}/$name" "${PRD_BRANCH}"
-    echo "✓ Branch '${REL_BRANCH}/$name' criada a partir de '$PRD_BRANCH'"
+    echo "✓ Branch '${REL_BRANCH}/$name' created from '$PRD_BRANCH'"
 }
 
 cmd_release_add() {
@@ -137,17 +137,17 @@ cmd_release_add() {
     require_arg "$name" "release add"
     
     if ! is_release_branch; then
-        echo "Erro: Você não está em uma branch de release."
+        echo "Error: Not on a release branch."
         exit 1
     fi
     
     if ! branch_exists "${FET_BRANCH}/$name"; then
-        echo "Erro: Branch '${FET_BRANCH}/$name' não existe."
+        echo "Error: Branch '${FET_BRANCH}/$name' does not exist."
         exit 1
     fi
     
     git merge "${FET_BRANCH}/$name"
-    echo "✓ Feature '${FET_BRANCH}/$name' adicionada à release"
+    echo "✓ Feature '${FET_BRANCH}/$name' added to release"
 }
 
 cmd_release_finish() {
@@ -156,7 +156,7 @@ cmd_release_finish() {
     require_arg "$name" "release finish"
     
     if ! branch_exists "${REL_BRANCH}/$name"; then
-        echo "Erro: Branch '${REL_BRANCH}/$name' não existe."
+        echo "Error: Branch '${REL_BRANCH}/$name' does not exist."
         exit 1
     fi
     
@@ -169,26 +169,26 @@ cmd_release_finish() {
     git tag "$name"
     
     git checkout "${DEV_BRANCH}"
-    echo "✓ Release '$name' finalizada: merge em '$PRD_BRANCH', merge em '$DEV_BRANCH' e tag criada"
+    echo "✓ Release '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', and tag created"
 }
 
 show_help() {
-    echo "Uso: gt <comando> [opções]"
+    echo "Usage: gt <command> [options]"
     echo ""
-    echo "Comandos:"
-    echo "  log                     Exibir histórico de commits"
-    echo "  init                    Inicializar repositório git com '$PRD_BRANCH' e '$DEV_BRANCH'"
-    echo "  feature new <nome>      Criar nova branch de feature a partir de '$PRD_BRANCH'"
-    echo "  feature finish <nome>    Fazer merge da feature em '$DEV_BRANCH'"
-    echo "  release new <nome>       Criar nova branch de release a partir de '$PRD_BRANCH'"
-    echo "  release add <nome>       Adicionar feature à release atual"
-    echo "  release finish <nome>   Finalizar release: merge em '$PRD_BRANCH', merge em '$DEV_BRANCH' e criar tag"
+    echo "Commands:"
+    echo "  log                     Show commit history"
+    echo "  init                    Initialize git repository with '$PRD_BRANCH' and '$DEV_BRANCH'"
+    echo "  feature new <name>      Create new feature branch from '$PRD_BRANCH'"
+    echo "  feature finish <name>   Merge feature into '$DEV_BRANCH'"
+    echo "  release new <name>      Create new release branch from '$PRD_BRANCH'"
+    echo "  release add <name>      Add feature to current release"
+    echo "  release finish <name>   Finish release: merge into '$PRD_BRANCH', merge into '$DEV_BRANCH', and create tag"
     echo ""
-    echo "Configurações (via git config):"
+    echo "Configuration (via git config):"
     echo "  gt.prd-branch=$PRD_BRANCH"
     echo "  gt.dev-branch=$DEV_BRANCH"
     echo ""
-    echo "Para configurar:"
+    echo "To configure:"
     echo "  git config gt.prd-branch main"
     echo "  git config gt.dev-branch develop"
 }
