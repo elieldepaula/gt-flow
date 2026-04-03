@@ -4,6 +4,7 @@ PRD_BRANCH=$(git config gt.prd-branch || echo "main")
 DEV_BRANCH=$(git config gt.dev-branch || echo "develop")
 REL_BRANCH=$(git config gt.rel-branch || echo "release/")
 FET_BRANCH=$(git config gt.fet-branch || echo "feature/")
+HOT_BRANCH=$(git config gt.hot-branch || echo "hotfix/")
 REL_PREFIX=$(git config gt.rel-prefix || echo "")
 PRD_FROM=$(git config gt.prd-from || echo "dev")
 DEV_FROM=$(git config gt.dev-from || echo "dev")
@@ -41,6 +42,11 @@ get_current_branch() {
 is_release_branch() {
     local current=$(get_current_branch)
     [[ "$current" == "${REL_BRANCH}"* ]]
+}
+
+is_hotfix_branch() {
+    local current=$(get_current_branch)
+    [[ "$current" == "${HOT_BRANCH}"* ]]
 }
 
 get_source_branch() {
@@ -188,6 +194,44 @@ cmd_release_finish() {
     echo "✓ Release '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', and tag created"
 }
 
+cmd_hotfix_new() {
+    is_git_repo
+    local name="$1"
+    require_arg "$name" "hotfix new"
+    
+    if branch_exists "${HOT_BRANCH}$name"; then
+        echo "Error: Branch '${HOT_BRANCH}$name' already exists."
+        exit 1
+    fi
+    
+    git checkout -b "${HOT_BRANCH}$name" "${PRD_BRANCH}"
+    echo "✓ Branch '${HOT_BRANCH}$name' created from '$PRD_BRANCH'"
+}
+
+cmd_hotfix_finish() {
+    is_git_repo
+    local name="$1"
+    local version="$2"
+    require_arg "$name" "hotfix finish"
+    require_arg "$version" "hotfix finish"
+    
+    if ! branch_exists "${HOT_BRANCH}$name"; then
+        echo "Error: Branch '${HOT_BRANCH}$name' does not exist."
+        exit 1
+    fi
+    
+    git checkout "${PRD_BRANCH}"
+    git merge "${HOT_BRANCH}$name"
+    
+    git checkout "${DEV_BRANCH}"
+    git merge "${HOT_BRANCH}$name"
+    
+    git tag "$version"
+    
+    git checkout "${DEV_BRANCH}"
+    echo "✓ Hotfix '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', and tag '$version' created"
+}
+
 show_help() {
     echo "Usage: gt <command> [options]"
     echo ""
@@ -199,12 +243,15 @@ show_help() {
     echo "  release new <name>      Create new release branch (source: $PRD_FROM)"
     echo "  release add <name>      Add feature to current release"
     echo "  release finish <name>   Finish release: merge into '$PRD_BRANCH', merge into '$DEV_BRANCH', and create tag"
+    echo "  hotfix new <name>        Create new hotfix branch (source: $PRD_BRANCH)"
+    echo "  hotfix finish <name> <version>  Finish hotfix: merge into '$PRD_BRANCH', merge into '$DEV_BRANCH', and create tag"
     echo ""
     echo "Configuration (via git config):"
     echo "  gt.prd-branch=$PRD_BRANCH"
     echo "  gt.dev-branch=$DEV_BRANCH"
     echo "  gt.rel-branch=$REL_BRANCH"
     echo "  gt.fet-branch=$FET_BRANCH"
+    echo "  gt.hot-branch=$HOT_BRANCH"
     echo "  gt.rel-prefix=$REL_PREFIX"
     echo "  gt.prd-from=$PRD_FROM      (prd or dev)"
     echo "  gt.dev-from=$DEV_FROM      (prd or dev)"
@@ -214,6 +261,7 @@ show_help() {
     echo "  git config gt.dev-branch develop"
     echo "  git config gt.rel-branch release/"
     echo "  git config gt.fet-branch feature/"
+    echo "  git config gt.hot-branch hotfix/"
     echo "  git config gt.rel-prefix \"\""
     echo "  git config gt.prd-from dev   (or prd)"
     echo "  git config gt.dev-from dev   (or prd)"
@@ -234,6 +282,13 @@ case "$1" in
             "new")     cmd_release_new "$3" ;;
             "add")     cmd_release_add "$3" ;;
             "finish")  cmd_release_finish "$3" ;;
+            *)         show_help ;;
+        esac
+        ;;
+    "hotfix")
+        case "$2" in
+            "new")     cmd_hotfix_new "$3" ;;
+            "finish")  cmd_hotfix_finish "$3" "$4" ;;
             *)         show_help ;;
         esac
         ;;
