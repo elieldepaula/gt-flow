@@ -14,19 +14,41 @@ alias gt='/path/to/gt.sh'
 
 ## Configuration
 
-Set production and development branches:
+Set branches and sources:
 
 ```bash
 # Global (all projects)
 git config --global gt.prd-branch main
 git config --global gt.dev-branch develop
+git config --global gt.rel-branch release
+git config --global gt.fet-branch feature
+git config --global gt.rel-prefix ""
+git config --global gt.prd-from dev
+git config --global gt.dev-from dev
 
 # Per repository
 git config gt.prd-branch main
 git config gt.dev-branch develop
+git config gt.rel-branch release
+git config gt.fet-branch feature
+git config gt.rel-prefix ""
+git config gt.prd-from dev
+git config gt.dev-from dev
 ```
 
-If not configured, defaults to: `main` and `develop`.
+| Config | Values | Default | Description |
+|--------|--------|---------|-------------|
+| `gt.prd-branch` | Branch name | `main` | Production branch |
+| `gt.dev-branch` | Branch name | `develop` | Development branch |
+| `gt.rel-branch` | Branch name | `release` | Release branch prefix |
+| `gt.fet-branch` | Branch name | `feature` | Feature branch prefix |
+| `gt.rel-prefix` | String | (empty) | Release name prefix |
+| `gt.prd-from` | `prd` or `dev` | `dev` | Source for PRD branches |
+| `gt.dev-from` | `prd` or `dev` | `dev` | Source for DEV branches |
+
+The `gt.prd-from` and `gt.dev-from` configs define the source branch for creating new feature and release branches:
+- `prd`: Creates from `gt.prd-branch` (e.g., main)
+- `dev`: Creates from `gt.dev-branch` (e.g., develop)
 
 ## Commands
 
@@ -49,11 +71,12 @@ gt init
 - Creates branch `gt.dev-branch` and checks it out
 
 ### `gt feature new <name>`
-Create a new feature branch from the production branch.
+Create a new feature branch. The source branch depends on `gt.prd-from`.
 
 ```bash
 gt feature new my-feature
-# Creates: feature/my-feature from main
+# Creates: feature/my-feature from gt.prd-branch (if gt.prd-from=prd)
+#          or from gt.dev-branch (if gt.prd-from=dev)
 ```
 
 ### `gt feature finish <name>`
@@ -66,11 +89,12 @@ gt feature finish my-feature
 ```
 
 ### `gt release new <name>`
-Create a new release branch from the production branch.
+Create a new release branch. The source branch depends on `gt.prd-from`.
 
 ```bash
 gt release new 1.0.0
-# Creates: release/1.0.0 from main
+# Creates: release/1.0.0 from gt.prd-branch (if gt.prd-from=prd)
+#          or from gt.dev-branch (if gt.prd-from=dev)
 ```
 
 ### `gt release add <name>`

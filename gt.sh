@@ -5,6 +5,8 @@ DEV_BRANCH=$(git config gt.dev-branch || echo "develop")
 REL_BRANCH=$(git config gt.rel-branch || echo "release")
 FET_BRANCH=$(git config gt.fet-branch || echo "feature")
 REL_PREFIX=$(git config gt.rel-prefix || echo "")
+PRD_FROM=$(git config gt.prd-from || echo "dev")
+DEV_FROM=$(git config gt.dev-from || echo "dev")
 
 is_git_repo() {
     if ! git rev-parse --is-inside-work-tree &>/dev/null; then
@@ -39,6 +41,17 @@ get_current_branch() {
 is_release_branch() {
     local current=$(get_current_branch)
     [[ "$current" == "${REL_BRANCH}"/* ]]
+}
+
+get_source_branch() {
+    local mode="$1"
+    local from=$(git config gt.${mode}-from || echo "prd")
+    
+    if [ "$from" = "dev" ]; then
+        echo "$DEV_BRANCH"
+    else
+        echo "$PRD_BRANCH"
+    fi
 }
 
 cmd_log() {
@@ -99,8 +112,9 @@ cmd_feature_new() {
         exit 1
     fi
     
-    git checkout -b "${FET_BRANCH}/$name" "${PRD_BRANCH}"
-    echo "✓ Branch '${FET_BRANCH}/$name' created from '$PRD_BRANCH'"
+    local source=$(get_source_branch "prd")
+    git checkout -b "${FET_BRANCH}/$name" "$source"
+    echo "✓ Branch '${FET_BRANCH}/$name' created from '$source'"
 }
 
 cmd_feature_finish() {
@@ -128,8 +142,9 @@ cmd_release_new() {
         exit 1
     fi
     
-    git checkout -b "${REL_BRANCH}/${REL_PREFIX}$name" "${PRD_BRANCH}"
-    echo "✓ Branch '${REL_BRANCH}/${REL_PREFIX}$name' created from '$PRD_BRANCH'"
+    local source=$(get_source_branch "prd")
+    git checkout -b "${REL_BRANCH}/${REL_PREFIX}$name" "$source"
+    echo "✓ Branch '${REL_BRANCH}/${REL_PREFIX}$name' created from '$source'"
 }
 
 cmd_release_add() {
@@ -179,19 +194,29 @@ show_help() {
     echo "Commands:"
     echo "  log                     Show commit history"
     echo "  init                    Initialize git repository with '$PRD_BRANCH' and '$DEV_BRANCH'"
-    echo "  feature new <name>      Create new feature branch from '$PRD_BRANCH'"
+    echo "  feature new <name>      Create new feature branch (source: $PRD_FROM)"
     echo "  feature finish <name>   Merge feature into '$DEV_BRANCH'"
-    echo "  release new <name>      Create new release branch from '$PRD_BRANCH'"
+    echo "  release new <name>      Create new release branch (source: $PRD_FROM)"
     echo "  release add <name>      Add feature to current release"
     echo "  release finish <name>   Finish release: merge into '$PRD_BRANCH', merge into '$DEV_BRANCH', and create tag"
     echo ""
     echo "Configuration (via git config):"
     echo "  gt.prd-branch=$PRD_BRANCH"
     echo "  gt.dev-branch=$DEV_BRANCH"
+    echo "  gt.rel-branch=$REL_BRANCH"
+    echo "  gt.fet-branch=$FET_BRANCH"
+    echo "  gt.rel-prefix=$REL_PREFIX"
+    echo "  gt.prd-from=$PRD_FROM      (prd or dev)"
+    echo "  gt.dev-from=$DEV_FROM      (prd or dev)"
     echo ""
     echo "To configure:"
     echo "  git config gt.prd-branch main"
     echo "  git config gt.dev-branch develop"
+    echo "  git config gt.rel-branch release"
+    echo "  git config gt.fet-branch feature"
+    echo "  git config gt.rel-prefix \"\""
+    echo "  git config gt.prd-from dev   (or prd)"
+    echo "  git config gt.dev-from dev   (or prd)"
 }
 
 case "$1" in
