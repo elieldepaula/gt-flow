@@ -2,8 +2,8 @@
 
 PRD_BRANCH=$(git config gt.prd-branch || echo "main")
 DEV_BRANCH=$(git config gt.dev-branch || echo "develop")
-REL_BRANCH=$(git config gt.rel-branch || echo "release")
-FET_BRANCH=$(git config gt.fet-branch || echo "feature")
+REL_BRANCH=$(git config gt.rel-branch || echo "release/")
+FET_BRANCH=$(git config gt.fet-branch || echo "feature/")
 REL_PREFIX=$(git config gt.rel-prefix || echo "")
 PRD_FROM=$(git config gt.prd-from || echo "dev")
 DEV_FROM=$(git config gt.dev-from || echo "dev")
@@ -40,7 +40,7 @@ get_current_branch() {
 
 is_release_branch() {
     local current=$(get_current_branch)
-    [[ "$current" == "${REL_BRANCH}"/* ]]
+    [[ "$current" == "${REL_BRANCH}"* ]]
 }
 
 get_source_branch() {
@@ -107,14 +107,14 @@ cmd_feature_new() {
     local name="$1"
     require_arg "$name" "feature new"
     
-    if branch_exists "${FET_BRANCH}/$name"; then
-        echo "Error: Branch '${FET_BRANCH}/$name' already exists."
+    if branch_exists "${FET_BRANCH}$name"; then
+        echo "Error: Branch '${FET_BRANCH}$name' already exists."
         exit 1
     fi
     
     local source=$(get_source_branch "prd")
-    git checkout -b "${FET_BRANCH}/$name" "$source"
-    echo "✓ Branch '${FET_BRANCH}/$name' created from '$source'"
+    git checkout -b "${FET_BRANCH}$name" "$source"
+    echo "✓ Branch '${FET_BRANCH}$name' created from '$source'"
 }
 
 cmd_feature_finish() {
@@ -122,14 +122,14 @@ cmd_feature_finish() {
     local name="$1"
     require_arg "$name" "feature finish"
     
-    if ! branch_exists "${FET_BRANCH}/$name"; then
-        echo "Error: Branch '${FET_BRANCH}/$name' does not exist."
+    if ! branch_exists "${FET_BRANCH}$name"; then
+        echo "Error: Branch '${FET_BRANCH}$name' does not exist."
         exit 1
     fi
     
     git checkout "${DEV_BRANCH}"
-    git merge "${FET_BRANCH}/$name"
-    echo "✓ Merged '${FET_BRANCH}/$name' into '$DEV_BRANCH'"
+    git merge "${FET_BRANCH}$name"
+    echo "✓ Merged '${FET_BRANCH}$name' into '$DEV_BRANCH'"
 }
 
 cmd_release_new() {
@@ -137,14 +137,14 @@ cmd_release_new() {
     local name="$1"
     require_arg "$name" "release new"
     
-    if branch_exists "${REL_BRANCH}/${REL_PREFIX}$name"; then
-        echo "Error: Branch '${REL_BRANCH}/${REL_PREFIX}$name' already exists."
+    if branch_exists "${REL_BRANCH}${REL_PREFIX}$name"; then
+        echo "Error: Branch '${REL_BRANCH}${REL_PREFIX}$name' already exists."
         exit 1
     fi
     
     local source=$(get_source_branch "prd")
-    git checkout -b "${REL_BRANCH}/${REL_PREFIX}$name" "$source"
-    echo "✓ Branch '${REL_BRANCH}/${REL_PREFIX}$name' created from '$source'"
+    git checkout -b "${REL_BRANCH}${REL_PREFIX}$name" "$source"
+    echo "✓ Branch '${REL_BRANCH}${REL_PREFIX}$name' created from '$source'"
 }
 
 cmd_release_add() {
@@ -157,13 +157,13 @@ cmd_release_add() {
         exit 1
     fi
     
-    if ! branch_exists "${FET_BRANCH}/$name"; then
-        echo "Error: Branch '${FET_BRANCH}/$name' does not exist."
+    if ! branch_exists "${FET_BRANCH}$name"; then
+        echo "Error: Branch '${FET_BRANCH}$name' does not exist."
         exit 1
     fi
     
-    git merge "${FET_BRANCH}/$name"
-    echo "✓ Feature '${FET_BRANCH}/$name' added to release"
+    git merge "${FET_BRANCH}$name"
+    echo "✓ Feature '${FET_BRANCH}$name' added to release"
 }
 
 cmd_release_finish() {
@@ -171,16 +171,16 @@ cmd_release_finish() {
     local name="$1"
     require_arg "$name" "release finish"
     
-    if ! branch_exists "${REL_BRANCH}/${REL_PREFIX}$name"; then
-        echo "Error: Branch '${REL_BRANCH}/${REL_PREFIX}$name' does not exist."
+    if ! branch_exists "${REL_BRANCH}${REL_PREFIX}$name"; then
+        echo "Error: Branch '${REL_BRANCH}${REL_PREFIX}$name' does not exist."
         exit 1
     fi
     
     git checkout "${PRD_BRANCH}"
-    git merge "${REL_BRANCH}/$name"
+    git merge "${REL_BRANCH}$name"
     
     git checkout "${DEV_BRANCH}"
-    git merge "${REL_BRANCH}/$name"
+    git merge "${REL_BRANCH}$name"
     
     git tag "$name"
     
@@ -212,8 +212,8 @@ show_help() {
     echo "To configure:"
     echo "  git config gt.prd-branch main"
     echo "  git config gt.dev-branch develop"
-    echo "  git config gt.rel-branch release"
-    echo "  git config gt.fet-branch feature"
+    echo "  git config gt.rel-branch release/"
+    echo "  git config gt.fet-branch feature/"
     echo "  git config gt.rel-prefix \"\""
     echo "  git config gt.prd-from dev   (or prd)"
     echo "  git config gt.dev-from dev   (or prd)"
