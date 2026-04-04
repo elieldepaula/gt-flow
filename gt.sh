@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2026 Eliel de Paula <elieldepaula@gmail.com>
+# Copyright (c) 2026 Eliel de Paula <ulisse.falcucci@gmail.com>
 # Licensed under the MIT License
 
 PRD_BRANCH=$(git config gt.prd-branch || echo "main")
@@ -270,7 +270,7 @@ show_help() {
     echo "  release new <name>      Create new release branch (source: $PRD_FROM)"
     echo "  release add <name>      Add feature to current release"
     echo "  release finish <name>   Finish release: merge into '$PRD_BRANCH', merge into '$DEV_BRANCH', and create tag"
-    echo "  hotfix new <name>        Create new hotfix branch (source: $PRD_BRANCH)"
+    echo "  hotfix new <name>       Create new hotfix branch (source: $PRD_BRANCH)"
     echo "  hotfix finish <name> <version>  Finish hotfix: merge into '$PRD_BRANCH', merge into '$DEV_BRANCH', and create tag"
     echo ""
     echo "Configuration (via git config):"
