@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) 2026 Eliel de Paula <elieldepaula@gmail.com>
+# Licensed under the MIT License
+
 PRD_BRANCH=$(git config gt.prd-branch || echo "main")
 DEV_BRANCH=$(git config gt.dev-branch || echo "develop")
 REL_BRANCH=$(git config gt.rel-branch || echo "release/")
