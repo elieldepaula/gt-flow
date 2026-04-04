@@ -283,7 +283,7 @@ show_help() {
     echo "  gt.fet-prefix=$FET_PREFIX"
     echo "  gt.prd-from=$PRD_FROM      (prd or dev)"
     echo "  gt.dev-from=$DEV_FROM      (prd or dev)"
-    echo "  gt.keep-feature=$KEEP_FEATURE     (y or n)"
+    echo "  gt.keep-feature=$KEEP_FEATURE    (y or n)"
     echo ""
     echo "To configure:"
     echo "  git config gt.prd-branch main"
@@ -295,7 +295,7 @@ show_help() {
     echo "  git config gt.fet-prefix \"\""
     echo "  git config gt.prd-from dev   (or prd)"
     echo "  git config gt.dev-from dev   (or prd)"
-    echo "  git config gt.keep-feature n   (to remove feature branch after finish)"
+    echo "  git config gt.keep-feature n (to remove feature branch after finish)"
 }
 
 case "$1" in
