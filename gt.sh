@@ -9,6 +9,7 @@ REL_PREFIX=$(git config gt.rel-prefix || echo "")
 PRD_FROM=$(git config gt.prd-from || echo "dev")
 DEV_FROM=$(git config gt.dev-from || echo "dev")
 KEEP_FEATURE=$(git config gt.keep-feature || echo "y")
+FET_PREFIX=$(git config gt.fet-prefix || echo "")
 
 is_git_repo() {
     if ! git rev-parse --is-inside-work-tree &>/dev/null; then
@@ -114,14 +115,14 @@ cmd_feature_new() {
     local name="$1"
     require_arg "$name" "feature new"
     
-    if branch_exists "${FET_BRANCH}$name"; then
-        echo "Error: Branch '${FET_BRANCH}$name' already exists."
+    if branch_exists "${FET_BRANCH}${FET_PREFIX}$name"; then
+        echo "Error: Branch '${FET_BRANCH}${FET_PREFIX}$name' already exists."
         exit 1
     fi
     
     local source=$(get_source_branch "prd")
-    git checkout -b "${FET_BRANCH}$name" "$source"
-    echo "✓ Branch '${FET_BRANCH}$name' created from '$source'"
+    git checkout -b "${FET_BRANCH}${FET_PREFIX}$name" "$source"
+    echo "✓ Branch '${FET_BRANCH}${FET_PREFIX}$name' created from '$source'"
 }
 
 cmd_feature_finish() {
@@ -129,23 +130,23 @@ cmd_feature_finish() {
     local name="$1"
     require_arg "$name" "feature finish"
     
-    if ! branch_exists "${FET_BRANCH}$name"; then
-        echo "Error: Branch '${FET_BRANCH}$name' does not exist."
+    if ! branch_exists "${FET_BRANCH}${FET_PREFIX}$name"; then
+        echo "Error: Branch '${FET_BRANCH}${FET_PREFIX}$name' does not exist."
         exit 1
     fi
     
     git checkout "${DEV_BRANCH}"
-    git merge "${FET_BRANCH}$name"
+    git merge "${FET_BRANCH}${FET_PREFIX}$name"
     
     if [ "$KEEP_FEATURE" = "n" ]; then
-        if git branch -d "${FET_BRANCH}$name" &>/dev/null; then
-            echo "✓ Merged '${FET_BRANCH}$name' into '$DEV_BRANCH' and branch removed"
+        if git branch -d "${FET_BRANCH}${FET_PREFIX}$name" &>/dev/null; then
+            echo "✓ Merged '${FET_BRANCH}${FET_PREFIX}$name' into '$DEV_BRANCH' and branch removed"
         else
-            echo "✓ Merged '${FET_BRANCH}$name' into '$DEV_BRANCH'"
-            echo "⚠ Branch '${FET_BRANCH}$name' not removed (not fully merged)"
+            echo "✓ Merged '${FET_BRANCH}${FET_PREFIX}$name' into '$DEV_BRANCH'"
+            echo "⚠ Branch '${FET_BRANCH}${FET_PREFIX}$name' not removed (not fully merged)"
         fi
     else
-        echo "✓ Merged '${FET_BRANCH}$name' into '$DEV_BRANCH'"
+        echo "✓ Merged '${FET_BRANCH}${FET_PREFIX}$name' into '$DEV_BRANCH'"
     fi
 }
 
@@ -174,13 +175,13 @@ cmd_release_add() {
         exit 1
     fi
     
-    if ! branch_exists "${FET_BRANCH}$name"; then
-        echo "Error: Branch '${FET_BRANCH}$name' does not exist."
+    if ! branch_exists "${FET_BRANCH}${FET_PREFIX}$name"; then
+        echo "Error: Branch '${FET_BRANCH}${FET_PREFIX}$name' does not exist."
         exit 1
     fi
     
-    git merge "${FET_BRANCH}$name"
-    echo "✓ Feature '${FET_BRANCH}$name' added to release"
+    git merge "${FET_BRANCH}${FET_PREFIX}$name"
+    echo "✓ Feature '${FET_BRANCH}${FET_PREFIX}$name' added to release"
 }
 
 cmd_release_finish() {
@@ -276,6 +277,7 @@ show_help() {
     echo "  gt.fet-branch=$FET_BRANCH"
     echo "  gt.hot-branch=$HOT_BRANCH"
     echo "  gt.rel-prefix=$REL_PREFIX"
+    echo "  gt.fet-prefix=$FET_PREFIX"
     echo "  gt.prd-from=$PRD_FROM      (prd or dev)"
     echo "  gt.dev-from=$DEV_FROM      (prd or dev)"
     echo "  gt.keep-feature=$KEEP_FEATURE     (y or n)"
@@ -287,6 +289,7 @@ show_help() {
     echo "  git config gt.fet-branch feature/"
     echo "  git config gt.hot-branch hotfix/"
     echo "  git config gt.rel-prefix \"\""
+    echo "  git config gt.fet-prefix \"\""
     echo "  git config gt.prd-from dev   (or prd)"
     echo "  git config gt.dev-from dev   (or prd)"
     echo "  git config gt.keep-feature n   (to remove feature branch after finish)"

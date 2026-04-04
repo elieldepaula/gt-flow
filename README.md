@@ -34,6 +34,7 @@ git config gt.rel-branch release/
 git config gt.fet-branch feature/
 git config gt.hot-branch hotfix/
 git config gt.rel-prefix ""
+git config gt.fet-prefix ""
 git config gt.prd-from dev
 git config gt.dev-from dev
 git config gt.keep-feature y
@@ -47,6 +48,7 @@ git config gt.keep-feature y
 | `gt.fet-branch` | Branch name | `feature/` | Feature branch prefix |
 | `gt.hot-branch` | Branch name | `hotfix/` | Hotfix branch prefix |
 | `gt.rel-prefix` | String | (empty) | Release name prefix |
+| `gt.fet-prefix` | String | (empty) | Feature name prefix |
 | `gt.prd-from` | `prd` or `dev` | `dev` | Source for PRD branches |
 | `gt.dev-from` | `prd` or `dev` | `dev` | Source for DEV branches |
 | `gt.keep-feature` | `y` or `n` | `y` | Remove feature branch after finish |
@@ -82,6 +84,10 @@ Create a new feature branch. The source branch depends on `gt.prd-from`.
 gt feature new my-feature
 # Creates: feature/my-feature from gt.prd-branch (if gt.prd-from=prd)
 #          or from gt.dev-branch (if gt.prd-from=dev)
+
+# With gt.fet-prefix:
+gt feature new my-feature
+# Creates: feature/prefix-my-feature (if gt.fet-prefix="prefix-")
 ```
 
 ### `gt feature finish <name>`
