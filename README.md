@@ -36,6 +36,7 @@ git config gt.hot-branch hotfix/
 git config gt.rel-prefix ""
 git config gt.prd-from dev
 git config gt.dev-from dev
+git config gt.keep-feature y
 ```
 
 | Config | Values | Default | Description |
@@ -48,6 +49,7 @@ git config gt.dev-from dev
 | `gt.rel-prefix` | String | (empty) | Release name prefix |
 | `gt.prd-from` | `prd` or `dev` | `dev` | Source for PRD branches |
 | `gt.dev-from` | `prd` or `dev` | `dev` | Source for DEV branches |
+| `gt.keep-feature` | `y` or `n` | `y` | Remove feature branch after finish |
 
 The `gt.prd-from` and `gt.dev-from` configs define the source branch for creating new feature and release branches:
 - `prd`: Creates from `gt.prd-branch` (e.g., main)
@@ -91,6 +93,11 @@ gt feature finish my-feature
 # Checks out develop
 ```
 
+To remove the feature branch after finish, set:
+```bash
+git config gt.keep-feature n
+```
+
 ### `gt release new <name>`
 Create a new release branch. The source branch depends on `gt.prd-from`.
 
@@ -120,6 +127,8 @@ gt release finish 1.0.0
 # 4. Checkout to gt.dev-branch (develop)
 ```
 
+**Note:** The branch `<name>` branch is deleted.
+
 ### `gt hotfix new <name>`
 Create a new hotfix branch from production branch.
 
@@ -138,6 +147,8 @@ gt hotfix finish fix-login-bug 1.0.1
 # 3. Create tag <version>
 # 4. Checkout to gt.dev-branch (develop)
 ```
+
+**Note:** The branch `<name>` branch is deleted.
 
 ## Workflow
 

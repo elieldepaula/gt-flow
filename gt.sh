@@ -8,6 +8,7 @@ HOT_BRANCH=$(git config gt.hot-branch || echo "hotfix/")
 REL_PREFIX=$(git config gt.rel-prefix || echo "")
 PRD_FROM=$(git config gt.prd-from || echo "dev")
 DEV_FROM=$(git config gt.dev-from || echo "dev")
+KEEP_FEATURE=$(git config gt.keep-feature || echo "y")
 
 is_git_repo() {
     if ! git rev-parse --is-inside-work-tree &>/dev/null; then
@@ -135,7 +136,17 @@ cmd_feature_finish() {
     
     git checkout "${DEV_BRANCH}"
     git merge "${FET_BRANCH}$name"
-    echo "✓ Merged '${FET_BRANCH}$name' into '$DEV_BRANCH'"
+    
+    if [ "$KEEP_FEATURE" = "n" ]; then
+        if git branch -d "${FET_BRANCH}$name" &>/dev/null; then
+            echo "✓ Merged '${FET_BRANCH}$name' into '$DEV_BRANCH' and branch removed"
+        else
+            echo "✓ Merged '${FET_BRANCH}$name' into '$DEV_BRANCH'"
+            echo "⚠ Branch '${FET_BRANCH}$name' not removed (not fully merged)"
+        fi
+    else
+        echo "✓ Merged '${FET_BRANCH}$name' into '$DEV_BRANCH'"
+    fi
 }
 
 cmd_release_new() {
@@ -191,7 +202,13 @@ cmd_release_finish() {
     git tag "$name"
     
     git checkout "${DEV_BRANCH}"
-    echo "✓ Release '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', and tag created"
+    
+    if git branch -d "${REL_BRANCH}${REL_PREFIX}$name" &>/dev/null; then
+        echo "✓ Release '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', tag created, and branch removed"
+    else
+        echo "✓ Release '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', tag created"
+        echo "⚠ Branch '${REL_BRANCH}${REL_PREFIX}$name' not removed (not fully merged)"
+    fi
 }
 
 cmd_hotfix_new() {
@@ -229,7 +246,13 @@ cmd_hotfix_finish() {
     git tag "$version"
     
     git checkout "${DEV_BRANCH}"
-    echo "✓ Hotfix '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', and tag '$version' created"
+    
+    if git branch -d "${HOT_BRANCH}$name" &>/dev/null; then
+        echo "✓ Hotfix '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', tag '$version' created, and branch removed"
+    else
+        echo "✓ Hotfix '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', tag '$version' created"
+        echo "⚠ Branch '${HOT_BRANCH}$name' not removed (not fully merged)"
+    fi
 }
 
 show_help() {
@@ -255,6 +278,7 @@ show_help() {
     echo "  gt.rel-prefix=$REL_PREFIX"
     echo "  gt.prd-from=$PRD_FROM      (prd or dev)"
     echo "  gt.dev-from=$DEV_FROM      (prd or dev)"
+    echo "  gt.keep-feature=$KEEP_FEATURE     (y or n)"
     echo ""
     echo "To configure:"
     echo "  git config gt.prd-branch main"
@@ -265,6 +289,7 @@ show_help() {
     echo "  git config gt.rel-prefix \"\""
     echo "  git config gt.prd-from dev   (or prd)"
     echo "  git config gt.dev-from dev   (or prd)"
+    echo "  git config gt.keep-feature n   (to remove feature branch after finish)"
 }
 
 case "$1" in
