@@ -153,6 +153,43 @@ cmd_feature_finish() {
     fi
 }
 
+cmd_feature_send() {
+    is_git_repo
+    local name="$1"
+    require_arg "$name" "feature send"
+    
+    if ! branch_exists "${FET_BRANCH}${FET_PREFIX}$name"; then
+        echo "Error: Branch '${FET_BRANCH}${FET_PREFIX}$name' does not exist."
+        exit 1
+    fi
+    
+    git push origin "${FET_BRANCH}${FET_PREFIX}$name"
+    echo "✓ Feature '${FET_BRANCH}${FET_PREFIX}$name' pushed to origin"
+}
+
+cmd_feature_get() {
+    is_git_repo
+    local name="$1"
+    require_arg "$name" "feature get"
+    
+    local branch="${FET_BRANCH}${FET_PREFIX}$name"
+    
+    if ! git ls-remote --exit-code --heads origin "$branch" &>/dev/null; then
+        echo "Error: Branch '$branch' does not exist on remote."
+        exit 1
+    fi
+    
+    if branch_exists "$branch"; then
+        git checkout "$branch"
+        git pull origin "$branch"
+    else
+        git checkout -b "$branch" "origin/$branch"
+        git pull origin "$branch"
+    fi
+    
+    echo "✓ Feature '$branch' pulled from origin"
+}
+
 cmd_release_new() {
     is_git_repo
     local name="$1"
@@ -185,6 +222,43 @@ cmd_release_add() {
     
     git merge "${FET_BRANCH}${FET_PREFIX}$name"
     echo "✓ Feature '${FET_BRANCH}${FET_PREFIX}$name' added to release"
+}
+
+cmd_release_send() {
+    is_git_repo
+    local name="$1"
+    require_arg "$name" "release send"
+    
+    if ! branch_exists "${REL_BRANCH}${REL_PREFIX}$name"; then
+        echo "Error: Branch '${REL_BRANCH}${REL_PREFIX}$name' does not exist."
+        exit 1
+    fi
+    
+    git push origin "${REL_BRANCH}${REL_PREFIX}$name"
+    echo "✓ Release '${REL_BRANCH}${REL_PREFIX}$name' pushed to origin"
+}
+
+cmd_release_get() {
+    is_git_repo
+    local name="$1"
+    require_arg "$name" "release get"
+    
+    local branch="${REL_BRANCH}${REL_PREFIX}$name"
+    
+    if ! git ls-remote --exit-code --heads origin "$branch" &>/dev/null; then
+        echo "Error: Branch '$branch' does not exist on remote."
+        exit 1
+    fi
+    
+    if branch_exists "$branch"; then
+        git checkout "$branch"
+        git pull origin "$branch"
+    else
+        git checkout -b "$branch" "origin/$branch"
+        git pull origin "$branch"
+    fi
+    
+    echo "✓ Release '$branch' pulled from origin"
 }
 
 cmd_release_finish() {
@@ -267,9 +341,13 @@ show_help() {
     echo "  init                    Initialize git repository with '$PRD_BRANCH' and '$DEV_BRANCH'"
     echo "  feature new <name>      Create new feature branch (source: $PRD_FROM)"
     echo "  feature finish <name>   Merge feature into '$DEV_BRANCH'"
+    echo "  feature send <name>     Push feature branch to remote"
+    echo "  feature get <name>      Fetch and pull feature branch from remote"
     echo "  release new <name>      Create new release branch (source: $PRD_FROM)"
     echo "  release add <name>      Add feature to current release"
     echo "  release finish <name>   Finish release: merge into '$PRD_BRANCH', merge into '$DEV_BRANCH', and create tag"
+    echo "  release send <name>     Push release branch to remote"
+    echo "  release get <name>      Fetch and pull release branch from remote"
     echo "  hotfix new <name>       Create new hotfix branch (source: $PRD_BRANCH)"
     echo "  hotfix finish <name> <version>  Finish hotfix: merge into '$PRD_BRANCH', merge into '$DEV_BRANCH', and create tag"
     echo ""
@@ -305,6 +383,8 @@ case "$1" in
         case "$2" in
             "new")     cmd_feature_new "$3" ;;
             "finish")  cmd_feature_finish "$3" ;;
+            "send")    cmd_feature_send "$3" ;;
+            "get")     cmd_feature_get "$3" ;;
             *)         show_help ;;
         esac
         ;;
@@ -313,6 +393,8 @@ case "$1" in
             "new")     cmd_release_new "$3" ;;
             "add")     cmd_release_add "$3" ;;
             "finish")  cmd_release_finish "$3" ;;
+            "send")    cmd_release_send "$3" ;;
+            "get")     cmd_release_get "$3" ;;
             *)         show_help ;;
         esac
         ;;
