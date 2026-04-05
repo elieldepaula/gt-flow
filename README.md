@@ -104,6 +104,27 @@ To remove the feature branch after finish, set:
 git config gt.keep-feature n
 ```
 
+### `gt feature send <name>`
+Push a feature branch to remote.
+
+```bash
+gt feature send my-feature
+# Pushes feature/my-feature to origin
+```
+
+**Note:** Requires the branch to exist locally.
+
+### `gt feature get <name>`
+Fetch and pull a feature branch from remote.
+
+```bash
+gt feature get my-feature
+# Fetches from origin and checks out feature/my-feature
+# If branch exists locally, does pull instead of checkout
+```
+
+**Note:** Requires the branch to exist on remote.
+
 ### `gt release new <name>`
 Create a new release branch. The source branch depends on `gt.prd-from`.
 
@@ -134,6 +155,27 @@ gt release finish 1.0.0
 ```
 
 **Note:** The branch `<name>` branch is deleted.
+
+### `gt release send <name>`
+Push a release branch to remote.
+
+```bash
+gt release send 1.0.0
+# Pushes release/1.0.0 to origin
+```
+
+**Note:** Requires the branch to exist locally.
+
+### `gt release get <name>`
+Fetch and pull a release branch from remote.
+
+```bash
+gt release get 1.0.0
+# Fetches from origin and checks out release/1.0.0
+# If branch exists locally, does pull instead of checkout
+```
+
+**Note:** Requires the branch to exist on remote.
 
 ### `gt hotfix new <name>`
 Create a new hotfix branch from production branch.
