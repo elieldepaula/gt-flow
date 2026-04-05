@@ -9,8 +9,8 @@ REL_BRANCH=$(git config gt.rel-branch || echo "release/")
 FET_BRANCH=$(git config gt.fet-branch || echo "feature/")
 HOT_BRANCH=$(git config gt.hot-branch || echo "hotfix/")
 REL_PREFIX=$(git config gt.rel-prefix || echo "")
-PRD_FROM=$(git config gt.prd-from || echo "dev")
-DEV_FROM=$(git config gt.dev-from || echo "dev")
+FET_FROM=$(git config gt.fet-from || echo "dev")
+REL_FROM=$(git config gt.rel-from || echo "dev")
 KEEP_FEATURE=$(git config gt.keep-feature || echo "y")
 FET_PREFIX=$(git config gt.fet-prefix || echo "")
 
@@ -56,7 +56,7 @@ is_hotfix_branch() {
 
 get_source_branch() {
     local mode="$1"
-    local from=$(git config gt.${mode}-from || echo "prd")
+    local from=$(git config gt.${mode}-from || echo "dev")
     
     if [ "$from" = "dev" ]; then
         echo "$DEV_BRANCH"
@@ -67,7 +67,7 @@ get_source_branch() {
 
 cmd_log() {
     is_git_repo
-    git log --oneline --graph --all
+    git log --graph --all
 }
 
 cmd_init() {
@@ -123,7 +123,7 @@ cmd_feature_new() {
         exit 1
     fi
     
-    local source=$(get_source_branch "prd")
+    local source=$(get_source_branch "fet")
     git checkout -b "${FET_BRANCH}${FET_PREFIX}$name" "$source"
     echo "✓ Branch '${FET_BRANCH}${FET_PREFIX}$name' created from '$source'"
 }
@@ -200,7 +200,7 @@ cmd_release_new() {
         exit 1
     fi
     
-    local source=$(get_source_branch "prd")
+    local source=$(get_source_branch "rel")
     git checkout -b "${REL_BRANCH}${REL_PREFIX}$name" "$source"
     echo "✓ Branch '${REL_BRANCH}${REL_PREFIX}$name' created from '$source'"
 }
@@ -359,8 +359,8 @@ show_help() {
     echo "  gt.hot-branch=$HOT_BRANCH"
     echo "  gt.rel-prefix=$REL_PREFIX"
     echo "  gt.fet-prefix=$FET_PREFIX"
-    echo "  gt.prd-from=$PRD_FROM      (prd or dev)"
-    echo "  gt.dev-from=$DEV_FROM      (prd or dev)"
+    echo "  gt.fet-from=$FET_FROM      (prd or dev)"
+    echo "  gt.rel-from=$REL_FROM      (prd or dev)"
     echo "  gt.keep-feature=$KEEP_FEATURE    (y or n)"
     echo ""
     echo "To configure:"
@@ -371,8 +371,8 @@ show_help() {
     echo "  git config gt.hot-branch hotfix/"
     echo "  git config gt.rel-prefix \"\""
     echo "  git config gt.fet-prefix \"\""
-    echo "  git config gt.prd-from dev   (or prd)"
-    echo "  git config gt.dev-from dev   (or prd)"
+    echo "  git config gt.fet-from dev   (or prd)"
+    echo "  git config gt.rel-from dev   (or prd)"
     echo "  git config gt.keep-feature n (to remove feature branch after finish)"
 }
 
