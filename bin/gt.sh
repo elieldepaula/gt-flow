@@ -8,82 +8,9 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT_DIR/config/config.sh"
 source "$ROOT_DIR/lib/util.sh"
 
-cmd_feature_new() {
-    is_git_repo
-    local name="$1"
-    require_arg "$name" "feature new"
-    
-    if branch_exists "${FET_BRANCH}${FET_PREFIX}$name"; then
-        echo "Error: Branch '${FET_BRANCH}${FET_PREFIX}$name' already exists."
-        exit 1
-    fi
-    
-    local source=$(get_source_branch "fet")
-    git checkout -b "${FET_BRANCH}${FET_PREFIX}$name" "$source"
-    echo "✓ Branch '${FET_BRANCH}${FET_PREFIX}$name' created from '$source'"
-}
-
-cmd_feature_finish() {
-    is_git_repo
-    local name="$1"
-    require_arg "$name" "feature finish"
-    
-    if ! branch_exists "${FET_BRANCH}${FET_PREFIX}$name"; then
-        echo "Error: Branch '${FET_BRANCH}${FET_PREFIX}$name' does not exist."
-        exit 1
-    fi
-    
-    git checkout "${DEV_BRANCH}"
-    git merge "${FET_BRANCH}${FET_PREFIX}$name"
-    
-    if [ "$KEEP_FEATURE" = "n" ]; then
-        if git branch -d "${FET_BRANCH}${FET_PREFIX}$name" &>/dev/null; then
-            echo "✓ Merged '${FET_BRANCH}${FET_PREFIX}$name' into '$DEV_BRANCH' and branch removed"
-        else
-            echo "✓ Merged '${FET_BRANCH}${FET_PREFIX}$name' into '$DEV_BRANCH'"
-            echo "⚠ Branch '${FET_BRANCH}${FET_PREFIX}$name' not removed (not fully merged)"
-        fi
-    else
-        echo "✓ Merged '${FET_BRANCH}${FET_PREFIX}$name' into '$DEV_BRANCH'"
-    fi
-}
-
-cmd_feature_send() {
-    is_git_repo
-    local name="$1"
-    require_arg "$name" "feature send"
-    
-    if ! branch_exists "${FET_BRANCH}${FET_PREFIX}$name"; then
-        echo "Error: Branch '${FET_BRANCH}${FET_PREFIX}$name' does not exist."
-        exit 1
-    fi
-    
-    git push origin "${FET_BRANCH}${FET_PREFIX}$name"
-    echo "✓ Feature '${FET_BRANCH}${FET_PREFIX}$name' pushed to origin"
-}
-
-cmd_feature_get() {
-    is_git_repo
-    local name="$1"
-    require_arg "$name" "feature get"
-    
-    local branch="${FET_BRANCH}${FET_PREFIX}$name"
-    
-    if ! git ls-remote --exit-code --heads origin "$branch" &>/dev/null; then
-        echo "Error: Branch '$branch' does not exist on remote."
-        exit 1
-    fi
-    
-    if branch_exists "$branch"; then
-        git checkout "$branch"
-        git pull origin "$branch"
-    else
-        git checkout -b "$branch" "origin/$branch"
-        git pull origin "$branch"
-    fi
-    
-    echo "✓ Feature '$branch' pulled from origin"
-}
+for file in "$ROOT_DIR/scripts/"*.sh; do
+    source "$file"
+done
 
 cmd_release_new() {
     is_git_repo
