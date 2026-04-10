@@ -272,15 +272,15 @@ cmd_release_finish() {
     fi
     
     git checkout "${PRD_BRANCH}"
-    git merge "${REL_BRANCH}$name"
-    
-    git checkout "${DEV_BRANCH}"
-    git merge "${REL_BRANCH}$name"
+    git merge "${REL_BRANCH}${REL_PREFIX}$name"
     
     git tag "$name"
-    
+
     git checkout "${DEV_BRANCH}"
-    
+    git merge "${REL_BRANCH}${REL_PREFIX}$name"
+
+    git checkout "${DEV_BRANCH}"
+
     if git branch -d "${REL_BRANCH}${REL_PREFIX}$name" &>/dev/null; then
         echo "✓ Release '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', tag created, and branch removed"
     else
@@ -294,42 +294,40 @@ cmd_hotfix_new() {
     local name="$1"
     require_arg "$name" "hotfix new"
     
-    if branch_exists "${HOT_BRANCH}$name"; then
-        echo "Error: Branch '${HOT_BRANCH}$name' already exists."
+    if branch_exists "${HOT_BRANCH}${REL_PREFIX}$name"; then
+        echo "Error: Branch '${HOT_BRANCH}${REL_PREFIX}$name' already exists."
         exit 1
     fi
     
-    git checkout -b "${HOT_BRANCH}$name" "${PRD_BRANCH}"
-    echo "✓ Branch '${HOT_BRANCH}$name' created from '$PRD_BRANCH'"
+    git checkout -b "${HOT_BRANCH}${REL_PREFIX}$name" "${PRD_BRANCH}"
+    echo "✓ Branch '${HOT_BRANCH}${REL_PREFIX}$name' created from '$PRD_BRANCH'"
 }
 
 cmd_hotfix_finish() {
     is_git_repo
     local name="$1"
-    local version="$2"
     require_arg "$name" "hotfix finish"
-    require_arg "$version" "hotfix finish"
     
-    if ! branch_exists "${HOT_BRANCH}$name"; then
-        echo "Error: Branch '${HOT_BRANCH}$name' does not exist."
+    if ! branch_exists "${HOT_BRANCH}${REL_PREFIX}$name"; then
+        echo "Error: Branch '${HOT_BRANCH${REL_PREFIX}}$name' does not exist."
         exit 1
     fi
     
     git checkout "${PRD_BRANCH}"
-    git merge "${HOT_BRANCH}$name"
-    
+    git merge "${HOT_BRANCH}${REL_PREFIX}$name"
+
+    git tag "$name"
+
     git checkout "${DEV_BRANCH}"
-    git merge "${HOT_BRANCH}$name"
-    
-    git tag "$version"
-    
+    git merge "${HOT_BRANCH}${REL_PREFIX}$name"
+
     git checkout "${DEV_BRANCH}"
-    
-    if git branch -d "${HOT_BRANCH}$name" &>/dev/null; then
+
+    if git branch -d "${HOT_BRANCH}${REL_PREFIX}$name" &>/dev/null; then
         echo "✓ Hotfix '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', tag '$version' created, and branch removed"
     else
         echo "✓ Hotfix '$name' finished: merged into '$PRD_BRANCH', merged into '$DEV_BRANCH', tag '$version' created"
-        echo "⚠ Branch '${HOT_BRANCH}$name' not removed (not fully merged)"
+        echo "⚠ Branch '${HOT_BRANCH}${REL_PREFIX}$name' not removed (not fully merged)"
     fi
 }
 
