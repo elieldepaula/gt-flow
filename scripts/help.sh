@@ -8,6 +8,7 @@ show_help() {
     echo ""
     echo "Commands:"
     echo "  log                     Show commit history"
+    echo "  update                  Check for new version"
     echo "  init                    Initialize git repository with '$PRD_BRANCH' and '$DEV_BRANCH'"
     echo "  feature new <name>      Create new feature branch (source: $PRD_FROM)"
     echo "  feature finish <name>   Merge feature into '$DEV_BRANCH'"
